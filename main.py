@@ -1,14 +1,16 @@
-import numpy as np
+import motion_estimation
 import cv2
 
+features_detection_engine = None
+
 def features_detection(image):
-    fd_engine = cv2.FastFeatureDetector_create(87, True)
+    key_points, key_points_desc = features_detection_engine.detectAndCompute(image, None)
 
-    kp = fd_engine.detect(image, None)
-    cv2.drawKeypoints(image, kp, image, (0, 255, 0))
+    motion_estimation.onNewFeaturesDiscovered(image, key_points, key_points_desc)
 
-    print("Detected " , len(kp), " features /w ", fd_engine.getThreshold())
+    #print("Detected ", len(key_points), " features")
 
+    cv2.drawKeypoints(image, key_points, image, (0, 255, 0))
     cv2.imshow('tracked_features', image)
     return True
 
@@ -34,4 +36,6 @@ def play_video(path):
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
+    features_detection_engine = cv2.ORB_create(nfeatures=500)
+
     play_video('media/test_1.mp4')
