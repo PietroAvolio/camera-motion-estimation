@@ -42,13 +42,13 @@ def onNewFeaturesDiscovered(image, kp, kp_desc):
 
     nf = Frame(image, kp, kp_desc, (previous_frame.getFrameId()+1 if previous_frame is not None else 0))
 
-    if previous_frame != None:
+    if previous_frame is not None:
         matched_features = bruteForceMatch(previous_frame.getKeyPoints(), previous_frame.getKeyPointsDescription(), nf.getKeyPoints(), nf.getKeyPointsDescription())
 
         print("Matched ", len(matched_features), " features btwn frame ", previous_frame.getFrameId(), "-", nf.getFrameId())
 
-        cv2.drawKeypoints(image, [x[1] for x in matched_features], image, (0, 0, 255))
-        cv2.imshow('matched_featres', image)
+        cv2.drawKeypoints(nf.getImage(), [x[1] for x in matched_features], nf.getImage(), (0, 0, 255))
+        cv2.imshow('matched_features', image)
 
     previous_frame = nf
 

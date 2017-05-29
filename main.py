@@ -26,8 +26,9 @@ def play_video(path):
     while cap.isOpened():
         ret, frame = cap.read()
 
-        if features_detection(frame.copy()):
-            cv2.imshow('untracked_features', frame)
+        if ret:
+            if features_detection(frame.copy()):
+                cv2.imshow('untracked_features', frame)
 
         if cv2.waitKey( 1 ) & 0xFF == ord('q'):
             break
