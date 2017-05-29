@@ -1,6 +1,8 @@
 import motion_estimation
 import cv2
 
+import time
+
 features_detection_engine = None
 
 def features_detection(image):
@@ -23,6 +25,8 @@ def play_video(path):
 
     print("Reading ", frame_width, "x", frame_height, " @", fps_rate, "fps.")
 
+    framesConsidered = 0
+    t1 = time.time()
     while cap.isOpened():
         ret, frame = cap.read()
 
@@ -32,6 +36,16 @@ def play_video(path):
 
         if cv2.waitKey( 1 ) & 0xFF == ord('q'):
             break
+
+        framesConsidered += 1
+
+        elapsed = time.time() - t1
+        if elapsed >= 1:
+            framesConsidered = framesConsidered/elapsed
+            t1 = time.time()
+            print("FPS: "+str(framesConsidered))
+            framesConsidered = 0
+
 
     cap.release()
     cv2.destroyAllWindows()
