@@ -1,6 +1,7 @@
 import motion_estimation
+import numpy as np
 import cv2
-
+import sys
 import time
 
 features_detection_engine = None
@@ -8,12 +9,22 @@ features_detection_engine = None
 def features_detection(image):
     key_points, key_points_desc = features_detection_engine.detectAndCompute(image, None)
 
-    motion_estimation.onNewFeaturesDiscovered(image, key_points, key_points_desc)
+    observations = motion_estimation.onNewFeaturesDiscovered(image, key_points, key_points_desc)
 
-    #print("Detected ", len(key_points), " features")
+    if observations is not None:
+    	# matched pair accessible through observations[i] which returns the tuple feature_frame_i, feature_frame_i+1
+    	'''
+    	for i in ['angle', 'class_id', 'octave', 'pt', 'response', 'size']:
+    		print(i, ": ", getattr(observations[0][0], i))
+    	
+    	for i in ['angle', 'class_id', 'octave', 'pt', 'response', 'size']:
+    		print(i, ": ", getattr(observations[0][1], i))
+    	sys.exit(0)
+    	'''
 
     cv2.drawKeypoints(image, key_points, image, (0, 255, 0))
     cv2.imshow('tracked_features', image)
+
     return True
 
 def play_video(path):
@@ -51,6 +62,6 @@ def play_video(path):
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    features_detection_engine = cv2.ORB_create(nfeatures=500)
+    features_detection_engine = cv2.ORB_create(nfeatures=650)
 
     play_video('media/test_1.mp4')

@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import sys
 
 previous_frame = None
 brute_force_matcher = None
@@ -39,16 +40,21 @@ def bruteForceMatch(frame_1_kps, frame_1_descriptors, frame_2_kps, frame_2_descr
 
 def onNewFeaturesDiscovered(image, kp, kp_desc):
     global previous_frame
+    matched_features = None
 
     nf = Frame(image, kp, kp_desc, (previous_frame.getFrameId()+1 if previous_frame is not None else 0))
 
     if previous_frame is not None:
         matched_features = bruteForceMatch(previous_frame.getKeyPoints(), previous_frame.getKeyPointsDescription(), nf.getKeyPoints(), nf.getKeyPointsDescription())
-
-        print("Matched ", len(matched_features), " features btwn frame ", previous_frame.getFrameId(), "-", nf.getFrameId())
+        print("Matched ", len(matched_features), "/", len(kp) ," features btwn frame ", previous_frame.getFrameId(), "-", nf.getFrameId())
 
         cv2.drawKeypoints(nf.getImage(), [x[1] for x in matched_features], nf.getImage(), (0, 0, 255))
         cv2.imshow('matched_features', image)
 
+        np.random.shuffle(matched_features)
+    
     previous_frame = nf
+
+
+    return matched_features
 
