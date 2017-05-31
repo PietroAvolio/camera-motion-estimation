@@ -5,6 +5,9 @@ import sys
 import time
 
 features_detection_engine = None
+camera_matrix = np.asmatrix([[float(1.18848290e+03), 0.0, float(6.42833462e+02)],
+                 [0.0, float(1.18459614e+03), float(3.86675542e+02)],
+                 [0.0, 0.0, 1.0]])
 
 def features_detection(image):
     key_points, key_points_desc = features_detection_engine.detectAndCompute(image, None)
@@ -12,19 +15,13 @@ def features_detection(image):
     observations = motion_estimation.onNewFeaturesDiscovered(image, key_points, key_points_desc)
 
     if observations is not None:
-    	# matched pair accessible through observations[i] which returns the tuple feature_frame_i, feature_frame_i+1
-    	'''
-    	for i in ['angle', 'class_id', 'octave', 'pt', 'response', 'size']:
-    		print(i, ": ", getattr(observations[0][0], i))
-    	
-    	for i in ['angle', 'class_id', 'octave', 'pt', 'response', 'size']:
-    		print(i, ": ", getattr(observations[0][1], i))
-    	sys.exit(0)
-    	'''
+        five_features = observations
 
-    cv2.drawKeypoints(image, key_points, image, (0, 255, 0))
-    cv2.imshow('tracked_features', image)
+        f1_points = np.array([x[0].pt for x in five_features])
+        f2_points = np.array([x[1].pt for x in five_features])
 
+        essential_mat = cv2.findEssentialMat(f1_points, f2_points, camera_matrix)
+        print(essential_mat)
     return True
 
 def play_video(path):
@@ -41,21 +38,21 @@ def play_video(path):
     while cap.isOpened():
         ret, frame = cap.read()
 
+        framesConsidered += 1
+
+        elapsed = time.time() - t1
+        if elapsed >= 1:
+            framesConsidered = framesConsidered / elapsed
+            t1 = time.time()
+            print("FPS: " + str(framesConsidered))
+            framesConsidered = 0
+
         if ret:
             if features_detection(frame.copy()):
                 cv2.imshow('untracked_features', frame)
 
         if cv2.waitKey( 1 ) & 0xFF == ord('q'):
             break
-
-        framesConsidered += 1
-
-        elapsed = time.time() - t1
-        if elapsed >= 1:
-            framesConsidered = framesConsidered/elapsed
-            t1 = time.time()
-            print("FPS: "+str(framesConsidered))
-            framesConsidered = 0
 
 
     cap.release()

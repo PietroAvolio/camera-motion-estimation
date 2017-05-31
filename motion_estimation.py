@@ -1,9 +1,12 @@
 import cv2
 import numpy as np
-import sys
 
 previous_frame = None
 brute_force_matcher = None
+
+camera_matrix = [[1.18848290e+03, 0.00000000e+00, 6.42833462e+02],
+                 [0.00000000e+00, 1.18459614e+03, 3.86675542e+02],
+                 [0.00000000e+00, 0.00000000e+00, 1.00000000e+00]]
 
 class Frame:
     def __init__(self, image, key_points, key_points_description, frame_id):
@@ -27,7 +30,7 @@ class Frame:
 def bruteForceMatch(frame_1_kps, frame_1_descriptors, frame_2_kps, frame_2_descriptors):
     global brute_force_matcher
 
-    if brute_force_matcher == None:
+    if brute_force_matcher is None:
         brute_force_matcher = cv2.BFMatcher(cv2.NORM_HAMMING, crossCheck=True)
 
     matches = brute_force_matcher.match(frame_1_descriptors, frame_2_descriptors)
@@ -48,13 +51,13 @@ def onNewFeaturesDiscovered(image, kp, kp_desc):
         matched_features = bruteForceMatch(previous_frame.getKeyPoints(), previous_frame.getKeyPointsDescription(), nf.getKeyPoints(), nf.getKeyPointsDescription())
         print("Matched ", len(matched_features), "/", len(kp) ," features btwn frame ", previous_frame.getFrameId(), "-", nf.getFrameId())
 
-        cv2.drawKeypoints(nf.getImage(), [x[1] for x in matched_features], nf.getImage(), (0, 0, 255))
-        cv2.imshow('matched_features', image)
+        img_copy = nf.getImage().copy()
+        cv2.drawKeypoints(img_copy, [x[1] for x in matched_features], img_copy, (0, 255, 0))
+        cv2.putText(img_copy, str(len(matched_features)), (10, 30), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0))
+        cv2.imshow('matched_features', img_copy)
 
         np.random.shuffle(matched_features)
-    
+
     previous_frame = nf
-
-
     return matched_features
 
