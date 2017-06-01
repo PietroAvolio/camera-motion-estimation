@@ -26,10 +26,10 @@ for f in frames:#range(0, 388)
         imgpoints.append(corners2)
 
         # Draw and display the corners
-        #img = cv2.drawChessboardCorners(img, (9, 6), corners2, ret)
-        #cv2.imshow('img', img)
+        img = cv2.drawChessboardCorners(img, (9, 6), corners2, ret)
+        cv2.imshow('img', img)
 
-    #cv2.waitKey(500)
+    cv2.waitKey(500)
 
 
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)

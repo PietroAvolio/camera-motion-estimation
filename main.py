@@ -9,20 +9,23 @@ camera_matrix = np.asmatrix([[float(1.18848290e+03), 0.0, float(6.42833462e+02)]
                  [0.0, float(1.18459614e+03), float(3.86675542e+02)],
                  [0.0, 0.0, 1.0]])
 
-def features_detection(image):
+def features_detection(image, fps):
     key_points, key_points_desc = features_detection_engine.detectAndCompute(image, None)
 
-    observations = motion_estimation.onNewFeaturesDiscovered(image, key_points, key_points_desc)
-
+    observations = motion_estimation.onNewFeaturesDiscovered(image, key_points, key_points_desc, fps)
+    hypotheses = []
     if observations is not None:
-        five_features = observations
+        for i in range(0, len(observations)):
+            rand = np.random.choice(len(observations), 5, replace=False)
+            five_features = [observations[x] for x in rand]
+            f1_points = np.array([x[0].pt for x in five_features])
+            f2_points = np.array([x[1].pt for x in five_features])
+            essential_mat = cv2.findEssentialMat(f1_points, f2_points, camera_matrix)
+            hypotheses.append(essential_mat[0])
+        print("Generated "+str(i)+" hypoteses")
 
-        f1_points = np.array([x[0].pt for x in five_features])
-        f2_points = np.array([x[1].pt for x in five_features])
-
-        essential_mat = cv2.findEssentialMat(f1_points, f2_points, camera_matrix)
-        print(essential_mat)
     return True
+
 
 def play_video(path):
     cap = cv2.VideoCapture(path)
@@ -35,6 +38,7 @@ def play_video(path):
 
     framesConsidered = 0
     t1 = time.time()
+    fps = 0
     while cap.isOpened():
         ret, frame = cap.read()
 
@@ -42,13 +46,13 @@ def play_video(path):
 
         elapsed = time.time() - t1
         if elapsed >= 1:
-            framesConsidered = framesConsidered / elapsed
+            fps = framesConsidered / elapsed
             t1 = time.time()
-            print("FPS: " + str(framesConsidered))
+            print("FPS: " + str(fps))
             framesConsidered = 0
 
         if ret:
-            if features_detection(frame.copy()):
+            if features_detection(frame.copy(), fps):
                 cv2.imshow('untracked_features', frame)
 
         if cv2.waitKey( 1 ) & 0xFF == ord('q'):

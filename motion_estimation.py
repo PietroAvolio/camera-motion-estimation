@@ -41,8 +41,9 @@ def bruteForceMatch(frame_1_kps, frame_1_descriptors, frame_2_kps, frame_2_descr
 
     return ret
 
-def onNewFeaturesDiscovered(image, kp, kp_desc):
+def onNewFeaturesDiscovered(image, kp, kp_desc, fps):
     global previous_frame
+    fps = float("{0:.2f}".format(fps))
     matched_features = None
 
     nf = Frame(image, kp, kp_desc, (previous_frame.getFrameId()+1 if previous_frame is not None else 0))
@@ -53,7 +54,8 @@ def onNewFeaturesDiscovered(image, kp, kp_desc):
 
         img_copy = nf.getImage().copy()
         cv2.drawKeypoints(img_copy, [x[1] for x in matched_features], img_copy, (0, 255, 0))
-        cv2.putText(img_copy, str(len(matched_features)), (10, 30), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0))
+        cv2.putText(img_copy, str(len(matched_features))+" Matches", (10, 60), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0))
+        cv2.putText(img_copy, str(fps)+ " FPS", (10, 30), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0))
         cv2.imshow('matched_features', img_copy)
 
         np.random.shuffle(matched_features)
