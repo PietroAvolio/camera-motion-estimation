@@ -38,7 +38,7 @@ def computeError(p1, p2, essential_mat):
 
 # i = iteration number; M = number of matched features, B = block size 
 def preemptionFunction(i, M, B = 100):
-	return M * np.power(2, np.floor(-i/B))
+	return np.floor(M * np.power(2, np.floor(-i/B)))
 
 def features_detection(image, fps):
     key_points, key_points_desc = features_detection_engine.detectAndCompute(image, None)
