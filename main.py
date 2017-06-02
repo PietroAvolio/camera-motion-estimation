@@ -68,7 +68,8 @@ def features_detection(image, fps):
 
 			mat = []
 			for j in range(0, essential_mat[0].shape[0], 3):
-				mat.append(np.array([essential_mat[0][j], essential_mat[0][j+1], essential_mat[0][j+2]]))
+				tmp_mat = np.asmatrix([essential_mat[0][j], essential_mat[0][j+1], essential_mat[0][j+2]])
+				mat.append(tmp_mat)
 
 			best = computeError(f1_points[5], f2_points[5], mat[0])
 			bestEMat = mat[0]
@@ -79,9 +80,7 @@ def features_detection(image, fps):
 			
 			hypotheses.append(bestEMat)
 
-		#print("Generated "+str(len(hypotheses))+" hypotheses")
-
-		# Pre-Emptive RANSAC TODO HERE
+		print("Generated "+str(len(hypotheses))+" hypotheses")
 
 		# len of hypothesis set
 		M = len(hypotheses)
