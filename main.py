@@ -5,9 +5,16 @@ import sys
 import time
 
 features_detection_engine = None
+
+# intrinsix parameter of the camera
 camera_matrix = np.asmatrix([[float(1.18848290e+03), 0.0, float(6.42833462e+02)],
                  [0.0, float(1.18459614e+03), float(3.86675542e+02)],
                  [0.0, 0.0, 1.0]])
+
+dist_coeff = np.array([[float(0.23320571), float(-0.11904307), float(0.00389023), float(0.00985417), float(0.55733118)]])
+# extrinsic parameters of the camera: rotation and translation matrix
+
+
 
 def features_detection(image, fps):
     key_points, key_points_desc = features_detection_engine.detectAndCompute(image, None)
@@ -15,13 +22,18 @@ def features_detection(image, fps):
     observations = motion_estimation.onNewFeaturesDiscovered(image, key_points, key_points_desc, fps)
     hypotheses = []
     if observations is not None:
-        for i in range(0, len(observations)):
-            rand = np.random.choice(len(observations), 5, replace=False)
+        for i in range(0, len(observations)+1):
+        	# pass 6 points (5 points + one for validation)
+            rand = np.random.choice(len(observations), 6, replace=False)
             five_features = [observations[x] for x in rand]
             f1_points = np.array([x[0].pt for x in five_features])
             f2_points = np.array([x[1].pt for x in five_features])
             essential_mat = cv2.findEssentialMat(f1_points, f2_points, camera_matrix)
             hypotheses.append(essential_mat[0])
+            R1, R2, t = cv2.decomposeEssentialMat(essential_mat[0])
+            print(f1_points[0])
+            #print(cv2.recoverPose(essential_mat[0], f1_points, f2_points, camera_matrix))
+            sys.exit(0)
         print("Generated "+str(i)+" hypoteses")
 
     return True

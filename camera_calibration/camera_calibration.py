@@ -29,10 +29,16 @@ for f in frames:#range(0, 388)
         img = cv2.drawChessboardCorners(img, (9, 6), corners2, ret)
         cv2.imshow('img', img)
 
-    cv2.waitKey(500)
+    #cv2.waitKey(500)
 
 
 ret, mtx, dist, rvecs, tvecs = cv2.calibrateCamera(objpoints, imgpoints, gray.shape[::-1], None, None)
+
+#https://stackoverflow.com/questions/23275877/opencv-get-perspective-matrix-from-translation-rotation
+#tmpDist = dist[0]
+#tmpRMat = cv2.Rodrigues(rvecs[0])
+#tempTVec = tvecs[0]
+
 print("RetValue")
 print(ret)
 print()
@@ -47,7 +53,6 @@ print()
 
 print("Rvecs")
 print(rvecs)
-print()
 
 print("tvecs")
 print(tvecs)
