@@ -15,27 +15,35 @@ camera_matrix = np.asmatrix([[float(1.18848290e+03), 0.0, float(6.42833462e+02)]
 dist_coeff = np.array([[float(0.23320571), float(-0.11904307), float(0.00389023), float(0.00985417), float(0.55733118)]])
 # extrinsic parameters of the camera: rotation and translation matrix
 
-
 # ported from modules/calib3d/src/five-point.cpp line 373
 def computeError(p1, p2, essential_mat):
-	E = np.asmatrix(essential_mat)
-
+	# x1 = [p1.x, p1.y, 1.0]
+	# x2 = [p2.x, p2.y, 1.0]
 	# the point is in 2D, so we assume the z parameter as 1
 	# the assumption may lea to wrong projections but since we project both points with the essential matrix
 	# we don't account for any projection error (the x, y and z will have the same bias in both points)
-	x1 = np.array([[p1[0]], [p1[1]], [1.0]])
-	x2 = np.array([[p2[0]], [p2[1]], [1.0]])
 	
-	Ex1	= E * x1
-	Etx2   = E.transpose() * x2
-	x2tEx1 = x2.transpose().dot(Ex1)
+	# Numpy implementation of transposition and matrix operations is very slow for our computation.
+	# I noticed a performance increases from 0.4 fps to 2.4 fps -> 6x
 
-	a = Ex1[0] * Ex1[0]
-	b = Ex1[1] * Ex1[1]
-	c = Etx2[0] * Etx2[0]
-	d = Etx2[1] * Etx2[1]
+	# E * x1
+	Ex1 = [
+		essential_mat.item(0)*p1[0] + essential_mat.item(1)*p1[1] + essential_mat.item(2)* 1.0, 
+		essential_mat.item(3)*p1[0] + essential_mat.item(4)*p1[1] + essential_mat.item(5)* 1.0, 
+		essential_mat.item(6)*p1[0] + essential_mat.item(7)*p1[1] + essential_mat.item(8)* 1.0
+	]
+	
+	# E.transpose() * x1
+	Etx2 = [
+		essential_mat.item(0)*p2[0] + essential_mat.item(3)*p2[1] + essential_mat.item(6)* 1.0, 
+		essential_mat.item(1)*p2[0] + essential_mat.item(4)*p2[1] + essential_mat.item(7)* 1.0, 
+		essential_mat.item(2)*p2[0] + essential_mat.item(5)*p2[1] + essential_mat.item(8)* 1.0
+	]
+	
+	# x2.transpose().dot(Ex1)
+	x2tEx1 = Ex1[0]*p2[0] + Ex1[1]*p2[1] + Ex1[2]*1.0
+	return float(x2tEx1 * x2tEx1 / (Ex1[0] * Ex1[0] + Ex1[1] * Ex1[1] + Etx2[0] * Etx2[0] + Etx2[1] * Etx2[1]))
 
-	return float(x2tEx1 * x2tEx1 / (a + b + c + d))
 
 # i = iteration number; M = number of matched features, B = block size 
 def preemptionFunction(i, M, B = 100):
@@ -49,7 +57,6 @@ def features_detection(image, fps):
 	if observations is not None:
 
 		# hypotheses generation
-		#print(cv2.findEssentialMat(np.array([x[0].pt for x in observations]), np.array([x[1].pt for x in observations]), camera_matrix))
 		
 		while len(hypotheses) < len(observations):
 			# get 6 points (5 points to get the essential matrices + one for validation, so to have a sigle 3x3 matrix instead of n 3x3 matrices)
@@ -94,7 +101,6 @@ def features_detection(image, fps):
 
 		lenHypotheses = len(hypotheses)
 		
-
 		# scan all observations
 		for o in range(1, len(observations)):
 			
