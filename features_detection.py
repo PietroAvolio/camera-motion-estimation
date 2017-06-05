@@ -33,7 +33,7 @@ def match_features(frame_1, frame_2, draw_matches=False, matches_color=(0, 255, 
     assert(frame_1 is not None and frame_2 is not None)
 
     matched_features = brute_force_match(frame_1, frame_2)
-    print("Matched ", len(matched_features), "/", len(frame_2.get_key_points()), " features btwn frame ", frame_1.get_frame_id(), "-", frame_2.get_frame_id())
+    #print("Matched ", len(matched_features), "/", len(frame_2.get_key_points()), " features btwn frame ", frame_1.get_frame_id(), "-", frame_2.get_frame_id())
 
     if draw_matches:
         img_copy = frame_2.get_image().copy()

@@ -3,6 +3,7 @@ import time
 import features_detection
 import frame_class
 import motion_estimation
+import motion_plot
 
 previous_frame = None
 
@@ -36,8 +37,9 @@ def start_motion_estimation(path):
             new_frame.find_key_points()
 
             if previous_frame is not None:
-                matched_features = features_detection.match_features(previous_frame, new_frame, True)
+                matched_features = features_detection.match_features(previous_frame, new_frame, False)
                 hypothesis = motion_estimation.preemptive_ransac_motion_estimation(previous_frame, new_frame, matched_features)
+                motion_plot.process_motion_hypothesis(hypothesis, matched_features)
 
             cv2.putText(frame, str(current_fps) + " FPS", (10, 30), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0))
             cv2.imshow("Untracked Features", frame)
