@@ -6,15 +6,7 @@ from random import randint
 t_ref = None
 r_ref = None
 
-
-def get_absolute_scale(matched_features):
-    random_point = matched_features[0] #randint(0, len(matched_features)-1)
-    previous_point = random_point[0].pt
-    current_point = random_point[1].pt
-
-    return np.sqrt((current_point[0]-previous_point[0])*(current_point[0]-previous_point[0]) +
-                   (current_point[1] - previous_point[1]) * (current_point[1] - previous_point[1]))
-
+trajectory = np.zeros((700, 700, 3), dtype=np.uint8)
 
 def process_motion_hypothesis(essential_matrix, matched_features):
     global current_coordinates, t_ref, r_ref
@@ -31,11 +23,10 @@ def process_motion_hypothesis(essential_matrix, matched_features):
             t_ref = t
             r_ref = r
         else:
-            absolute_scale = get_absolute_scale(matched_features)
-            print(absolute_scale)
-
-            if absolute_scale > 0.1:
-                t_ref = t_ref + absolute_scale*(r_ref.dot(t))
-                r_ref = r.dot(r_ref)
+            t_ref = t_ref + (r_ref.dot(t))
+            r_ref = r.dot(r_ref)
 
             print("X:", t_ref[0], " Y:", t_ref[1], " Z:", t_ref[2])
+            cv2.circle(trajectory, (t_ref[1]+300, t_ref[0]+300), 1, (0, 255, 0), 1)
+            cv2.rectangle(trajectory, (10, 20), (600, 60), (0, 0, 0), -1)
+            cv2.imshow("Trajectory", trajectory)

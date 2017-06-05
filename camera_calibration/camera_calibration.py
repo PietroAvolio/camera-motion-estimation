@@ -58,4 +58,6 @@ print("tvecs")
 print(tvecs)
 print()
 
+
+
 cv2.destroyAllWindows()
