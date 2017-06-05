@@ -12,7 +12,7 @@ dist_coeff = np.array(
 
 # i = iteration number; M = number of matched features, B = block size
 def preemption_function(i, M, B=100):
-    return int(np.floor(M * np.power(2, np.floor(-i / B))))
+    return int(np.floor(M * np.power(2, -np.floor(i / B))))
 
 
 # ported from modules/calib3d/src/five-point.cpp line 373
