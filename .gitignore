@@ -1,3 +1,4 @@
 .idea/*
+old/__pycache/*
 __pycache__/*
 cmd.exe.lnk
