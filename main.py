@@ -32,7 +32,7 @@ def start_motion_estimation(path):
 
             #if time_elapsed > 1:
             #    current_fps = float("{0:.2f}".format(frames_considered / time_elapsed))
-            #   time_snap = time.time()
+            #    time_snap = time.time()
             #    frames_considered = 0
 
             new_frame = frame_class.Frame(frame.copy(), 0 if previous_frame is None else previous_frame.get_frame_id()+1)
@@ -42,8 +42,9 @@ def start_motion_estimation(path):
                 matched_features = features_detection.match_features(previous_frame, new_frame, False)
                 hypothesis = motion_estimation.preemptive_ransac_motion_estimation(previous_frame, new_frame, matched_features)
                 #hypothesis = ransac.RANSAC_run(matched_features)
-                print(hypothesis)
-
+                #print(hypothesis)
+                motion_plot.process_motion_hypothesis(hypothesis, matched_features)
+                
             cv2.putText(frame, str(current_fps) + " FPS", (10, 30), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0))
             cv2.imshow("Untracked Features", frame)
 
