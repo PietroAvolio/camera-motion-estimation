@@ -4,6 +4,7 @@ import features_detection
 import frame_class
 import motion_estimation
 import ransac
+import motion_plot
 
 previous_frame = None
 
@@ -38,7 +39,7 @@ def start_motion_estimation(path):
             new_frame.find_key_points()
 
             if previous_frame is not None:
-                matched_features = features_detection.match_features(previous_frame, new_frame, True)
+                matched_features = features_detection.match_features(previous_frame, new_frame, False)
                 hypothesis = motion_estimation.preemptive_ransac_motion_estimation(previous_frame, new_frame, matched_features)
                 #hypothesis = ransac.RANSAC_run(matched_features)
                 print(hypothesis)

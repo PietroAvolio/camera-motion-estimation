@@ -98,16 +98,15 @@ def preemptive_ransac_motion_estimation(frame_1, frame_2, matched_features):
 
     while i <= N and f > 1:
         for h in range(0, len(scored_motion_hypotheses)):
-            motion_hypotheses_index = scored_motion_hypotheses[h][0]
+            motion_hypothesis_index = scored_motion_hypotheses[h][0]
 
             score = scoring_function(matched_features[i-1][0].pt,
                                      matched_features[i-1][1].pt,
-                                     motion_hypotheses[motion_hypotheses_index])
+                                     motion_hypotheses[motion_hypothesis_index])
 
-            scored_motion_hypotheses[h] = (motion_hypotheses_index, scored_motion_hypotheses[h][1] + score)
+            scored_motion_hypotheses[h] = (motion_hypothesis_index, scored_motion_hypotheses[h][1] + score)
 
         i += 1
-
         f_new = preemption_function(i, M)
 
         if f_new < f:
@@ -116,7 +115,6 @@ def preemptive_ransac_motion_estimation(frame_1, frame_2, matched_features):
         f = f_new
 
     scored_motion_hypotheses = sorted(scored_motion_hypotheses, key=lambda x: x[1], reverse=False)
-
     best_hypothesis = motion_hypotheses[scored_motion_hypotheses[0][0]]
     
     return best_hypothesis
