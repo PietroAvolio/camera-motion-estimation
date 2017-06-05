@@ -1,4 +1,4 @@
-from refact import features_detection # TODO Change
+import features_detection
 
 
 class Frame:
