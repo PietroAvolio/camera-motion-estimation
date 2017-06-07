@@ -6,29 +6,52 @@ camera_matrix = np.asmatrix([[float(1.18848290e+03), 0.0, float(6.42833462e+02)]
                              [0.0, float(1.18459614e+03), float(3.86675542e+02)],
                              [0.0, 0.0, 1.0]])
 
+fake_camera_matrix = np.asmatrix([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
+
 dist_coeff = np.array(
                     [[float(0.23320571), float(-0.11904307), float(0.00389023), float(0.00985417), float(0.55733118)]])
 
+fx = camera_matrix.item(0)
+fy = camera_matrix.item(4)
+cx = camera_matrix.item(2)
+cy = camera_matrix.item(5)
 
 # i = iteration number; M = number of matched features, B = block size
 def preemption_function(i, M, B=100):
     return int(np.floor(M * np.power(2, -np.floor(i / B))))
 
+def normalize_point(point):
+    return ((point[0] - cx) / fx, (point[1] - cy) / fy)
 
+def normalize_points(p1, p2):
+    ret1 = []
+    ret2 = []
+    
+    for i in p1:
+        ret1.append(((i[0] - cx) / fx, (i[1] - cy) / fy))
+    
+    for i in p2:
+        ret2.append(((i[0] - cx) / fx, (i[1] - cy) / fy))
+
+    return ret1, ret2
 # ported modules/calib3d/src/ptsetreg.cpp line 467
 def check_subset(p1, p2):
     threshold = 0.996
     #threshold = threshold*threshold
 
+    p1, p2 = normalize_points(p1, p2)
+    
+    i = 4
+
     for sel in range(0,2):
         points = p1 if sel == 0 else p2
 
         for j in range(0, 4):
-            d1 = [points[j][0] - points[4][0], points[j][1] - points[4][1]] 
+            d1 = [points[j][0] - points[i][0], points[j][1] - points[i][1]] 
             n1 = d1[0]*d1[0] + d1[1]*d1[1]
 
             for k in range(0, j):
-                d2 = [points[k][0] - points[4][0], points[k][1] - points[4][1]] 
+                d2 = [points[k][0] - points[i][0], points[k][1] - points[i][1]] 
                 denom = (d2[0]*d2[0] + d2[1]*d2[1])* n1
                 num = d1[0]*d2[0] + d1[1]*d2[1]
 
