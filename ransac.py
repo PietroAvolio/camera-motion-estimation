@@ -6,9 +6,12 @@ from motion_estimation import scoring_function, camera_matrix, threshold
 # we already know the model points, no need to use them as parameter of a function
 modelPoints = 5
 
+
+# it return the overall number of iterations that runsac
+# has to perform, accordingly to the accuracy (p) and to
+# the percentage of outliers (ep)
 # ported from modules/calib3d/src/ptsetreg.cpp
 # and adapted for our data structure
-
 # RANSACUpdateNumIters() line 53
 def ransac_update_num_iters(p, ep, maxIters):
     p = max(p, 0.0)
@@ -31,6 +34,10 @@ def ransac_update_num_iters(p, ep, maxIters):
         return round(num/denom)
 
 
+# it returns the number of inliers across the whole observation set
+# given the hypothesized model.
+# ported from modules/calib3d/src/ptsetreg.cpp
+# and adapted for our data structure
 # findInliers() line 86
 def find_inliers(observations, model, threshold):
     #t = threshold * threshold
@@ -41,6 +48,10 @@ def find_inliers(observations, model, threshold):
             inliners += 1
     return inliners
 
+# RANSAC implementation
+# returns the best movement hypothesis (which is an essential matrix)
+# ported from modules/calib3d/src/ptsetreg.cpp
+# and adapted for our data structure
 # run() line 164
 def RANSAC_run(observations):
     niters = 1000
@@ -52,19 +63,21 @@ def RANSAC_run(observations):
 
     # IMPORTANT
     # IMPORTANT
-    # The humor of python: 5/6 = 0
-    # Force this to float, so the division will be a proper float
+    # The humor of python: 5/6 = 0; 3h of wasted debugging
+    # Force this to float, so the division will be a proper float instead of a zero
+    # and niters is computed correctly (otherwise ep will be 0)
     count = float(len(observations))
     # IMPORTANT
     # IMPORTANT
+    # IMPORTANT
 
+    # number of current RANSAC iteration
     iteration = 0
-
-    #rand = np.array([0, 0, 0, 0, 0])
 
     while iteration < niters:
         iteration += 1        
         
+        # get 5 point at random to generate the essential matrices
         rand = np.random.choice(len(observations), 5, replace=False)
         five_features = [observations[x] for x in rand]
         f1_points = np.array([x[0].pt for x in five_features])
@@ -82,13 +95,18 @@ def RANSAC_run(observations):
         if essential_mat is None:
             continue
 
+        # scan the n essential matrices
         for i in range(0, essential_mat.shape[0], 3):
+            # matrix i
             mat_i = np.asmatrix([essential_mat[i], essential_mat[i + 1], essential_mat[i + 2]])
             good_count = find_inliers(observations, mat_i, threshold)
 
+            # the score is based on the number of inlisers
+            # if the score is better, update the status
             if good_count > max(max_good_count, modelPoints-1):
                 max_good_count = good_count
                 best_mat = mat_i
+                # get the new number of overall iterations needed to be run
                 niters = ransac_update_num_iters(confidence, (count - good_count)/count, niters)
     
     return best_mat
