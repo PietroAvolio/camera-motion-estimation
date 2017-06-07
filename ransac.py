@@ -67,7 +67,7 @@ def RANSAC_run(observations):
     rand = np.array([0, 0, 0, 0, 0])
 
     while iteration < niters:
-        
+        iteration += 1        
         while True:
             cv2.randu(rand, 0, len(observations))
             five_features = [observations[x] for x in rand]
@@ -83,10 +83,9 @@ def RANSAC_run(observations):
         # and count is equal to modelPoints (5), so it calls 
         # runKernel() of modules/calib3d/src/five-point.cpp line 40
         # which performs the needed computation and returns without running either LMeDS nor RANSAC
-        essential_mat = cv2.findEssentialMat(f1_points, f2_points, camera_matrix)[0]
+        essential_mat = cv2.findEssentialMat(f1_points, f2_points, camera_matrix, method=cv2.RANSAC)[0]
         
         if essential_mat is None:
-            iteration += 1
             continue
 
         for i in range(0, essential_mat.shape[0], 3):
@@ -97,5 +96,5 @@ def RANSAC_run(observations):
                 max_good_count = good_count
                 best_mat = mat_i
                 niters = ransac_update_num_iters(confidence, (count - good_count)/count, niters)
-        iteration += 1
+
     return best_mat
