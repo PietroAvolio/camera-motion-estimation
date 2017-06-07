@@ -27,8 +27,7 @@ def start_motion_estimation(path):
 
         if succ: # Frame was correctly acquired
             frames_considered += 1
-            if frames_considered < 200:
-            	continue
+            
             time_elapsed = time.time() - time_snap
             current_fps = float("{0:.2f}".format(frames_considered / time_elapsed))
 
