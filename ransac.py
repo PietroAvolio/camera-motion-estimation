@@ -39,7 +39,7 @@ def ransac_update_num_iters(p, ep, maxIters):
     if denom >= 0 or -num >= maxIters*(-denom):
         return maxIters
     else:
-        return np.floor(num/denom)
+        return round(num/denom)
 
 
 # findInliers() line 86

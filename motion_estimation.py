@@ -55,7 +55,7 @@ def scoring_function(p1, p2, essential_mat):
         essential_mat.item(6) * p1[0] + essential_mat.item(7) * p1[1] + essential_mat.item(8) * 1.0
     ]
 
-    # E.transpose() * x1
+    # E.transpose() * x2
     Etx2 = [
         essential_mat.item(0) * p2[0] + essential_mat.item(3) * p2[1] + essential_mat.item(6) * 1.0,
         essential_mat.item(1) * p2[0] + essential_mat.item(4) * p2[1] + essential_mat.item(7) * 1.0,
@@ -85,11 +85,12 @@ def generate_hypotheses(observations, num):
                 break
 
         # get the essential matrix/matrices with the 5 point method
-        essential_mat = cv2.findEssentialMat(f1_points[0:5], f2_points[0:5], camera_matrix)
+        essential_mat = cv2.findEssentialMat(f1_points, f2_points, camera_matrix)
 
         if essential_mat[0] is None:
             continue
 
+        hypotheses.append(essential_mat[0])
         mat = []
         for j in range(0, essential_mat[0].shape[0], 3):
             tmp_mat = np.asmatrix([essential_mat[0][j], essential_mat[0][j + 1], essential_mat[0][j + 2]])
@@ -126,9 +127,9 @@ def preemptive_ransac_motion_estimation(frame_1, frame_2, matched_features):
         for h in range(0, len(scored_motion_hypotheses)):
             motion_hypothesis_index = scored_motion_hypotheses[h][0]
 
-            score = scoring_function(matched_features[i-1][0].pt,
+            score = 1 if scoring_function(matched_features[i-1][0].pt,
                                      matched_features[i-1][1].pt,
-                                     motion_hypotheses[motion_hypothesis_index])
+                                     motion_hypotheses[motion_hypothesis_index]) < 1.0 else 0
 
             scored_motion_hypotheses[h] = (motion_hypothesis_index, scored_motion_hypotheses[h][1] + score)
 
