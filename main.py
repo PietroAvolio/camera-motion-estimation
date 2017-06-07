@@ -45,7 +45,9 @@ def start_motion_estimation(path):
                 hypothesis2 = cv2.findEssentialMat(np.array([x[0].pt for x in matched_features]),
                                                   np.array([x[1].pt for x in matched_features]),
                                                   motion_estimation.camera_matrix,
-                                                  method=cv2.RANSAC)[0]
+                                                  cv2.RANSAC,
+                                                  0.999,
+                                                  1.0)[0]
                 tr1.process_motion_hypothesis(hypothesis1, matched_features)
                 tr2.process_motion_hypothesis(hypothesis2, matched_features)
                 

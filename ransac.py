@@ -14,7 +14,7 @@ cy = camera_matrix.item(5)
 threshold = 1.0
 threshold /= (fx+fy)/2
 
-def normalizePoint(point):
+def normalize_point(point):
     return ((point[0] - cx) / fx, (point[1] - cy) / fy)
 
 # ported from modules/calib3d/src/ptsetreg.cpp
@@ -47,7 +47,7 @@ def find_inliers(observations, model, threshold):
     t = threshold * threshold
     inliners = 0
     for observation in observations:
-        error = scoring_function(normalizePoint(observation[0].pt), normalizePoint(observation[1].pt), model)
+        error = scoring_function(normalize_point(observation[0].pt), normalize_point(observation[1].pt), model)
         if error <= t:
             inliners += 1
     return inliners
@@ -83,7 +83,7 @@ def RANSAC_run(observations):
         # and count is equal to modelPoints (5), so it calls 
         # runKernel() of modules/calib3d/src/five-point.cpp line 40
         # which performs the needed computation and returns without running either LMeDS nor RANSAC
-        essential_mat = cv2.findEssentialMat(f1_points, f2_points, camera_matrix, method=cv2.RANSAC)[0]
+        essential_mat = cv2.findEssentialMat(f1_points, f2_points, camera_matrix, cv2.RANSAC, 0.999, 1.0)[0]
         
         if essential_mat is None:
             continue
