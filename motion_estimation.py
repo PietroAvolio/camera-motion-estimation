@@ -19,6 +19,9 @@ cy = camera_matrix.item(5)
 threshold = 1.0
 threshold /= (fx+fy)/2
 
+# to use in computation
+threshold = threshold * threshold
+
 # i = iteration number; M = number of matched features, B = block size
 def preemption_function(i, M, B=100):
     return int(np.floor(M * np.power(2, -np.floor(i / B))))
@@ -83,14 +86,14 @@ def generate_hypotheses(observations, num):
         f2_points = np.array([x[1].pt for x in selected_features])
 
         # get the essential matrix/matrices with the 5 point method
-        essential_mat = cv2.findEssentialMat(f1_points[0:5], f2_points[0:5], camera_matrix)
+        essential_mat = cv2.findEssentialMat(f1_points[0:5], f2_points[0:5], camera_matrix, cv2.RANSAC, 0.999, 1.0)[0]
 
-        if essential_mat[0] is None:
+        if essential_mat is None:
             continue
 
         mat = []
-        for j in range(0, essential_mat[0].shape[0], 3):
-            tmp_mat = np.asmatrix([essential_mat[0][j], essential_mat[0][j + 1], essential_mat[0][j + 2]])
+        for j in range(0, essential_mat.shape[0], 3):
+            tmp_mat = np.asmatrix([essential_mat[j], essential_mat[j + 1], essential_mat[j + 2]])
             mat.append(tmp_mat)
         
         best = scoring_function(f1_points[5], f2_points[5], mat[0])
@@ -112,7 +115,7 @@ def preemptive_ransac_motion_estimation(frame_1, frame_2, matched_features):
     np.random.shuffle(matched_features)
 
     N = len(matched_features)  # Number of observations
-    M = N  # Number of hypotheses to be generated Set equal to the number of observations
+    M = N/2  # Number of hypotheses to be generated Set equal to the number of observations
     i = 1  # Preemption iteration
     f = preemption_function(i, M)
 
@@ -126,9 +129,7 @@ def preemptive_ransac_motion_estimation(frame_1, frame_2, matched_features):
         for h in range(0, len(scored_motion_hypotheses)):
             motion_hypothesis_index = scored_motion_hypotheses[h][0]
 
-            score = 1 if scoring_function(matched_features[i-1][0].pt,
-                                     matched_features[i-1][1].pt,
-                                     motion_hypotheses[motion_hypothesis_index]) < 1.0 else 0
+            score = scoring_function(matched_features[i-1][0].pt, matched_features[i-1][1].pt, motion_hypotheses[motion_hypothesis_index])
 
             scored_motion_hypotheses[h] = (motion_hypothesis_index, scored_motion_hypotheses[h][1] + score)
 

@@ -31,8 +31,12 @@ def start_motion_estimation(path):
         if succ: # Frame was correctly acquired
             frames_considered += 1
             
+            # skip first 300 frames to avoid hand-shaking when video started
+            if frames_considered < 300:
+            	continue
+
             time_elapsed = time.time() - time_snap
-            current_fps = float("{0:.2f}".format(frames_considered / time_elapsed))
+            current_fps = float("{0:.2f}".format((frames_considered - 300)/ time_elapsed))
 
             new_frame = frame_class.Frame(frame.copy(), 0 if previous_frame is None else previous_frame.get_frame_id()+1)
             new_frame.find_key_points()
@@ -63,4 +67,4 @@ def start_motion_estimation(path):
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    start_motion_estimation('media/test_1.mp4')
+    start_motion_estimation('media/test_2.mp4')

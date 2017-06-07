@@ -33,11 +33,11 @@ def ransac_update_num_iters(p, ep, maxIters):
 
 # findInliers() line 86
 def find_inliers(observations, model, threshold):
-    t = threshold * threshold
+    #t = threshold * threshold
     inliners = 0
     for observation in observations:
         error = scoring_function(observation[0].pt, observation[1].pt, model)
-        if error <= t:
+        if error <= threshold:
             inliners += 1
     return inliners
 
