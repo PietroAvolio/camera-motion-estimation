@@ -6,6 +6,16 @@ from motion_estimation import camera_matrix, scoring_function, check_subset
 # we already know the model points, no need to use them as parameter of a function
 modelPoints = 5
 
+fx = camera_matrix.item(0)
+fy = camera_matrix.item(4)
+cx = camera_matrix.item(2)
+cy = camera_matrix.item(5)
+
+threshold = 1.0
+threshold /= (fx+fy)/2
+
+def normalizePoint(point):
+    return ((point[0] - cx) / fx, (point[1] - cy) / fy)
 
 # ported from modules/calib3d/src/ptsetreg.cpp
 # and adapted for our data structure
@@ -37,7 +47,7 @@ def find_inliers(observations, model, threshold):
     t = threshold * threshold
     inliners = 0
     for observation in observations:
-        error = scoring_function(observation[0].pt, observation[1].pt, model)
+        error = scoring_function(normalizePoint(observation[0].pt), normalizePoint(observation[1].pt), model)
         if error <= t:
             inliners += 1
     return inliners
@@ -49,15 +59,17 @@ def RANSAC_run(observations):
 
     # default confidence and threshold found on opencv documentation
     confidence = 0.999
-    threshold = 1.0
+    #threshold = 1.0
 
     count = len(observations)
     iteration = 0
 
+    rand = np.array([0, 0, 0, 0, 0])
+
     while iteration < niters:
         
         while True:
-            rand = np.random.choice(len(observations), 5, replace=False)
+            cv2.randu(rand, 0, len(observations))
             five_features = [observations[x] for x in rand]
             f1_points = np.array([x[0].pt for x in five_features])
             f2_points = np.array([x[1].pt for x in five_features])
@@ -72,7 +84,7 @@ def RANSAC_run(observations):
         # runKernel() of modules/calib3d/src/five-point.cpp line 40
         # which performs the needed computation and returns without running either LMeDS nor RANSAC
         essential_mat = cv2.findEssentialMat(f1_points, f2_points, camera_matrix)[0]
-
+        
         if essential_mat is None:
             iteration += 1
             continue
