@@ -15,6 +15,28 @@ def preemption_function(i, M, B=100):
     return int(np.floor(M * np.power(2, -np.floor(i / B))))
 
 
+# ported modules/calib3d/src/ptsetreg.cpp line 467
+def check_subset(p1, p2):
+    threshold = 0.996
+    #threshold = threshold*threshold
+
+    for sel in range(0,2):
+        points = p1 if sel == 0 else p2
+
+        for j in range(0, 4):
+            d1 = [points[j][0] - points[4][0], points[j][1] - points[4][1]] 
+            n1 = d1[0]*d1[0] + d1[1]*d1[1]
+
+            for k in range(0, j):
+                d2 = [points[k][0] - points[4][0], points[k][1] - points[4][1]] 
+                denom = (d2[0]*d2[0] + d2[1]*d2[1])* n1
+                num = d1[0]*d2[0] + d1[1]*d2[1]
+
+                if num*num > threshold*threshold*denom:
+                    return False
+
+    return True
+
 # ported from modules/calib3d/src/five-point.cpp line 373
 def scoring_function(p1, p2, essential_mat):
     # x1 = [p1.x, p1.y, 1.0]
@@ -51,12 +73,16 @@ def generate_hypotheses(observations, num):
     hypotheses = []
     while len(hypotheses) < num:
         # get 6 points (5 points to get the essential matrices + one for validation, so to have a sigle 3x3 matrix instead of n 3x3 matrices)
-        random_observations = np.random.choice(len(observations), 6, replace=False)
+        while True:
+            random_observations = np.random.choice(len(observations), 6, replace=False)
 
-        selected_features = [observations[x] for x in random_observations]
+            selected_features = [observations[x] for x in random_observations]
 
-        f1_points = np.array([x[0].pt for x in selected_features])
-        f2_points = np.array([x[1].pt for x in selected_features])
+            f1_points = np.array([x[0].pt for x in selected_features])
+            f2_points = np.array([x[1].pt for x in selected_features])
+
+            if check_subset(f1_points[0:5], f2_points[0:5]):
+                break
 
         # get the essential matrix/matrices with the 5 point method
         essential_mat = cv2.findEssentialMat(f1_points[0:5], f2_points[0:5], camera_matrix)

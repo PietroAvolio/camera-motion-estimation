@@ -27,6 +27,8 @@ def start_motion_estimation(path):
 
         if succ: # Frame was correctly acquired
             frames_considered += 1
+            if frames_considered < 200:
+            	continue
             time_elapsed = time.time() - time_snap
             current_fps = float("{0:.2f}".format(frames_considered / time_elapsed))
 
@@ -36,11 +38,12 @@ def start_motion_estimation(path):
             if previous_frame is not None:
                 matched_features = features_detection.match_features(previous_frame, new_frame, False)
                 hypothesis = motion_estimation.preemptive_ransac_motion_estimation(previous_frame, new_frame, matched_features)
-                '''hypothesis = cv2.findEssentialMat(np.array([x[0].pt for x in matched_features]),
-                                                  np.array([x[1].pt for x in matched_features]),
-                                                  motion_estimation.camera_matrix,
-                                                  method=cv2.RANSAC)[0]'''
-
+                #import ransac
+                #hypothesis = ransac.RANSAC_run(matched_features)
+                #hypothesis = cv2.findEssentialMat(np.array([x[0].pt for x in matched_features]),
+                #                                  np.array([x[1].pt for x in matched_features]),
+                #                                  motion_estimation.camera_matrix,
+                #                                  method=cv2.RANSAC)[0]
                 motion_plot.process_motion_hypothesis(hypothesis, matched_features)
                 
             cv2.putText(frame, str(current_fps) + " FPS", (10, 30), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0))
@@ -55,4 +58,4 @@ def start_motion_estimation(path):
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    start_motion_estimation('media/test_2.mp4')
+    start_motion_estimation('media/test_1.mp4')

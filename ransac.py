@@ -1,7 +1,7 @@
 import numpy as np
 import sys
 import cv2
-from motion_estimation import camera_matrix, scoring_function
+from motion_estimation import camera_matrix, scoring_function, check_subset
 
 # we already know the model points, no need to use them as parameter of a function
 modelPoints = 5
@@ -55,10 +55,14 @@ def RANSAC_run(observations):
     iteration = 0
 
     while iteration < niters:
-        rand = np.random.choice(len(observations), 5, replace=False)
-        five_features = [observations[x] for x in rand]
-        f1_points = np.array([x[0].pt for x in five_features])
-        f2_points = np.array([x[1].pt for x in five_features])
+        
+        while True:
+            rand = np.random.choice(len(observations), 5, replace=False)
+            five_features = [observations[x] for x in rand]
+            f1_points = np.array([x[0].pt for x in five_features])
+            f2_points = np.array([x[1].pt for x in five_features])
+            if check_subset(f1_points, f2_points):
+                break
 
         # this calls cv::findEssentialMat() of modules/calib3d/src/five-point.cpp in line 405
         # which calls createLMeDSPointSetRegistrator() of modules/calib3d/src/ptsetreg.cpp in line 
@@ -82,5 +86,4 @@ def RANSAC_run(observations):
                 best_mat = mat_i
                 niters = ransac_update_num_iters(confidence, (count - good_count)/count, niters)
         iteration += 1
-    print(iteration)
     return best_mat
