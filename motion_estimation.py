@@ -88,12 +88,11 @@ def generate_hypotheses(observations, num):
         if essential_mat[0] is None:
             continue
 
-        hypotheses.append(essential_mat[0])
         mat = []
         for j in range(0, essential_mat[0].shape[0], 3):
             tmp_mat = np.asmatrix([essential_mat[0][j], essential_mat[0][j + 1], essential_mat[0][j + 2]])
             mat.append(tmp_mat)
-
+        
         best = scoring_function(f1_points[5], f2_points[5], mat[0])
         best_matrix = mat[0]
 
@@ -113,7 +112,7 @@ def preemptive_ransac_motion_estimation(frame_1, frame_2, matched_features):
     np.random.shuffle(matched_features)
 
     N = len(matched_features)  # Number of observations
-    M = N  # Number of samples to be picked to generate the hypotheses. Set equal to the number of observations
+    M = N  # Number of hypotheses to be generated Set equal to the number of observations
     i = 1  # Preemption iteration
     f = preemption_function(i, M)
 
@@ -143,5 +142,6 @@ def preemptive_ransac_motion_estimation(frame_1, frame_2, matched_features):
 
     scored_motion_hypotheses = sorted(scored_motion_hypotheses, key=lambda x: x[1], reverse=False)
     best_hypothesis = motion_hypotheses[scored_motion_hypotheses[0][0]]
+
     
     return best_hypothesis

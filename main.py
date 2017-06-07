@@ -39,17 +39,17 @@ def start_motion_estimation(path):
 
             if previous_frame is not None:
                 matched_features = features_detection.match_features(previous_frame, new_frame, False)
-                #hypothesis1 = motion_estimation.preemptive_ransac_motion_estimation(previous_frame, new_frame, matched_features)
-                import ransac
-                hypothesis1 = ransac.RANSAC_run(matched_features)
-                hypothesis2 = cv2.findEssentialMat(np.array([x[0].pt for x in matched_features]),
-                                                  np.array([x[1].pt for x in matched_features]),
-                                                  motion_estimation.camera_matrix,
-                                                  cv2.RANSAC,
-                                                  0.999,
-                                                  1.0)[0]
+                hypothesis1 = motion_estimation.preemptive_ransac_motion_estimation(previous_frame, new_frame, matched_features)
+                #import ransac
+                #hypothesis1 = ransac.RANSAC_run(matched_features)
+                #hypothesis2 = cv2.findEssentialMat(np.array([x[0].pt for x in matched_features]),
+                #                                  np.array([x[1].pt for x in matched_features]),
+                #                                  motion_estimation.camera_matrix,
+                #                                  cv2.RANSAC,
+                #                                  0.999,
+                #                                  1.0)[0]
                 tr1.process_motion_hypothesis(hypothesis1, matched_features)
-                tr2.process_motion_hypothesis(hypothesis2, matched_features)
+                #tr2.process_motion_hypothesis(hypothesis2, matched_features)
                 
             cv2.putText(frame, str(current_fps) + " FPS", (10, 30), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0))
             cv2.imshow("Untracked Features", frame)
