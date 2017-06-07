@@ -6,15 +6,18 @@ camera_matrix = np.asmatrix([[float(1.18848290e+03), 0.0, float(6.42833462e+02)]
                              [0.0, float(1.18459614e+03), float(3.86675542e+02)],
                              [0.0, 0.0, 1.0]])
 
+# used for tests
 fake_camera_matrix = np.asmatrix([[1.0, 0.0, 0.0], [0.0, 1.0, 0.0], [0.0, 0.0, 1.0]])
 
-dist_coeff = np.array(
-                    [[float(0.23320571), float(-0.11904307), float(0.00389023), float(0.00985417), float(0.55733118)]])
+dist_coeff = np.array([[float(0.23320571), float(-0.11904307), float(0.00389023), float(0.00985417), float(0.55733118)]])
 
 fx = camera_matrix.item(0)
 fy = camera_matrix.item(4)
 cx = camera_matrix.item(2)
 cy = camera_matrix.item(5)
+
+threshold = 1.0
+threshold /= (fx+fy)/2
 
 # i = iteration number; M = number of matched features, B = block size
 def preemption_function(i, M, B=100):
@@ -34,34 +37,12 @@ def normalize_points(p1, p2):
         ret2.append(((i[0] - cx) / fx, (i[1] - cy) / fy))
 
     return ret1, ret2
-# ported modules/calib3d/src/ptsetreg.cpp line 467
-def check_subset(p1, p2):
-    threshold = 0.996
-    #threshold = threshold*threshold
-
-    p1, p2 = normalize_points(p1, p2)
-    
-    i = 4
-
-    for sel in range(0,2):
-        points = p1 if sel == 0 else p2
-
-        for j in range(0, 4):
-            d1 = [points[j][0] - points[i][0], points[j][1] - points[i][1]] 
-            n1 = d1[0]*d1[0] + d1[1]*d1[1]
-
-            for k in range(0, j):
-                d2 = [points[k][0] - points[i][0], points[k][1] - points[i][1]] 
-                denom = (d2[0]*d2[0] + d2[1]*d2[1])* n1
-                num = d1[0]*d2[0] + d1[1]*d2[1]
-
-                if num*num > threshold*threshold*denom:
-                    return False
-
-    return True
 
 # ported from modules/calib3d/src/five-point.cpp line 373
 def scoring_function(p1, p2, essential_mat):
+    p1 = normalize_point(p1)
+    p2 = normalize_point(p2)
+
     # x1 = [p1.x, p1.y, 1.0]
     # x2 = [p2.x, p2.y, 1.0]
     # the point is in 2D, so we assume the z parameter as 1
@@ -96,19 +77,13 @@ def generate_hypotheses(observations, num):
     hypotheses = []
     while len(hypotheses) < num:
         # get 6 points (5 points to get the essential matrices + one for validation, so to have a sigle 3x3 matrix instead of n 3x3 matrices)
-        while True:
-            random_observations = np.random.choice(len(observations), 6, replace=False)
-
-            selected_features = [observations[x] for x in random_observations]
-
-            f1_points = np.array([x[0].pt for x in selected_features])
-            f2_points = np.array([x[1].pt for x in selected_features])
-
-            if check_subset(f1_points[0:5], f2_points[0:5]):
-                break
+        rand = np.random.choice(len(observations), 6, replace=False)
+        selected_features = [observations[x] for x in rand]
+        f1_points = np.array([x[0].pt for x in selected_features])
+        f2_points = np.array([x[1].pt for x in selected_features])
 
         # get the essential matrix/matrices with the 5 point method
-        essential_mat = cv2.findEssentialMat(f1_points, f2_points, camera_matrix)
+        essential_mat = cv2.findEssentialMat(f1_points[0:5], f2_points[0:5], camera_matrix)
 
         if essential_mat[0] is None:
             continue
@@ -123,8 +98,10 @@ def generate_hypotheses(observations, num):
         best_matrix = mat[0]
 
         for j in range(1, len(mat)):
-            if scoring_function(f1_points[5], f2_points[5], mat[j]) < best:
+            best1 = scoring_function(f1_points[5], f2_points[5], mat[j])
+            if best1 < best:
                 best_matrix = mat[j]
+                best = best1
 
         hypotheses.append(best_matrix)
 
