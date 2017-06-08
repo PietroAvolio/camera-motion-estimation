@@ -43,9 +43,9 @@ def start_motion_estimation(path):
 
             if previous_frame is not None:
                 matched_features = features_detection.match_features(previous_frame, new_frame, False)
-                hypothesis1 = motion_estimation.PREEMPTIVE_RANSAC_run(previous_frame, new_frame, matched_features)
-                #import ransac
-                #hypothesis1 = ransac.RANSAC_run(matched_features)
+                #hypothesis1 = motion_estimation.PREEMPTIVE_RANSAC_run(previous_frame, new_frame, matched_features)
+                import ransac
+                hypothesis1 = ransac.RANSAC_run(matched_features)
                 #hypothesis2 = cv2.findEssentialMat(np.array([x[0].pt for x in matched_features]),
                 #                                  np.array([x[1].pt for x in matched_features]),
                 #                                  motion_estimation.camera_matrix,
