@@ -19,8 +19,9 @@ def start_motion_estimation(path):
 
     print("Reading ", path, " at ", frame_width, "x", frame_height, " @", fps_rate, "fps.")
 
-    tr1 = motion_plot.Trajectory("Ported RANSAC")
-    tr2 = motion_plot.Trajectory("Original RANSAC")
+    tr1 = motion_plot.Trajectory("Original RANSAC")
+    tr2 = motion_plot.Trajectory("Ported RANSAC")
+    tr3 = motion_plot.Trajectory("PREEMPTIVE RANSAC")
 
     frames_considered = 0
     time_snap = time.time()
@@ -43,17 +44,18 @@ def start_motion_estimation(path):
 
             if previous_frame is not None:
                 matched_features = features_detection.match_features(previous_frame, new_frame, False)
-                #hypothesis1 = motion_estimation.PREEMPTIVE_RANSAC_run(previous_frame, new_frame, matched_features)
+                hypothesis3 = motion_estimation.PREEMPTIVE_RANSAC_run(previous_frame, new_frame, matched_features)
                 import ransac
-                hypothesis1 = ransac.RANSAC_run(matched_features)
-                #hypothesis2 = cv2.findEssentialMat(np.array([x[0].pt for x in matched_features]),
-                #                                  np.array([x[1].pt for x in matched_features]),
-                #                                  motion_estimation.camera_matrix,
-                #                                  cv2.RANSAC,
-                #                                  0.999,
-                #                                  1.0)[0]
+                hypothesis2 = ransac.RANSAC_run(matched_features)
+                hypothesis1 = cv2.findEssentialMat(np.array([x[0].pt for x in matched_features]),
+                                                  np.array([x[1].pt for x in matched_features]),
+                                                  motion_estimation.camera_matrix,
+                                                  cv2.RANSAC,
+                                                  0.999,
+                                                  1.0)[0]
                 tr1.process_motion_hypothesis(hypothesis1, matched_features)
-                #tr2.process_motion_hypothesis(hypothesis2, matched_features)
+                tr2.process_motion_hypothesis(hypothesis2, matched_features)
+                tr3.process_motion_hypothesis(hypothesis3, matched_features)
                 
             cv2.putText(frame, str(current_fps) + " FPS", (10, 30), cv2.FONT_HERSHEY_PLAIN, 2, (0, 255, 0))
             cv2.imshow("Untracked Features", frame)
@@ -67,4 +69,4 @@ def start_motion_estimation(path):
     cv2.destroyAllWindows()
 
 if __name__ == "__main__":
-    start_motion_estimation('media/test_2.mp4')
+    start_motion_estimation('media/test_1.mp4')
