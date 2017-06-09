@@ -19,7 +19,7 @@ def start_motion_estimation(path):
 
     print("Reading ", path, " at ", frame_width, "x", frame_height, " @", fps_rate, "fps.")
 
-    tr1 = motion_plot.Trajectory("Original RANSAC")
+    #tr1 = motion_plot.Trajectory("Original RANSAC")
     tr2 = motion_plot.Trajectory("Ported RANSAC")
     tr3 = motion_plot.Trajectory("PREEMPTIVE RANSAC")
 
@@ -47,13 +47,13 @@ def start_motion_estimation(path):
                 hypothesis3 = motion_estimation.PREEMPTIVE_RANSAC_run(previous_frame, new_frame, matched_features)
                 import ransac
                 hypothesis2 = ransac.RANSAC_run(matched_features)
-                hypothesis1 = cv2.findEssentialMat(np.array([x[0].pt for x in matched_features]),
-                                                  np.array([x[1].pt for x in matched_features]),
-                                                  motion_estimation.camera_matrix,
-                                                  cv2.RANSAC,
-                                                  0.999,
-                                                  1.0)[0]
-                tr1.process_motion_hypothesis(hypothesis1, matched_features)
+                #hypothesis1 = cv2.findEssentialMat(np.array([x[0].pt for x in matched_features]),
+                #                                  np.array([x[1].pt for x in matched_features]),
+                #                                  motion_estimation.camera_matrix,
+                #                                  cv2.RANSAC,
+                #                                  0.999,
+                #                                  1.0)[0]
+                #tr1.process_motion_hypothesis(hypothesis1, matched_features)
                 tr2.process_motion_hypothesis(hypothesis2, matched_features)
                 tr3.process_motion_hypothesis(hypothesis3, matched_features)
                 
