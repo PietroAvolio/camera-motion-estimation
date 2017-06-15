@@ -9,8 +9,11 @@ class Trajectory():
         self.sid = sid
         self.t_ref = None
         self.r_ref = None
-        self.trajectory = np.zeros((700, 700, 3), dtype=np.uint8)
+        self.trajectory = np.zeros((1500, 800, 3), dtype=np.uint8)
 
+
+    def save(self, name):
+        cv2.imwrite(name, self.trajectory)
 
     def process_motion_hypothesis(self, essential_matrix, matched_features):
         success, r, t, mask = cv2.recoverPose(essential_matrix,

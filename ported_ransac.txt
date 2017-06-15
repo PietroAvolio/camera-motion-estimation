@@ -1,0 +1,4 @@
+Min FPS: 0.1
+Max FPS: 7.94
+Avg FPS: 1.49
+Elapsed Time: 958.33
