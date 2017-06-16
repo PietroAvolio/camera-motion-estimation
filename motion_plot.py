@@ -9,8 +9,7 @@ class Trajectory():
         self.sid = sid
         self.t_ref = None
         self.r_ref = None
-        self.trajectory = np.zeros((1500, 800, 3), dtype=np.uint8)
-
+        self.trajectory = np.zeros((800, 800, 3), dtype=np.uint8)
 
     def save(self, name):
         cv2.imwrite(name, self.trajectory)
@@ -33,6 +32,6 @@ class Trajectory():
                 self.r_ref = r.dot(self.r_ref)
 
             #print("X:", t_ref[0], " Y:", t_ref[1], " Z:", t_ref[2])
-            cv2.circle(self.trajectory, (self.t_ref[1]+300, self.t_ref[0]+300), 1, (0, 255, 0), 1)
+            cv2.circle(self.trajectory, (self.t_ref[1]+400, self.t_ref[0]+400), 1, (0, 255, 0), 1)
             cv2.rectangle(self.trajectory, (10, 20), (600, 60), (0, 0, 0), -1)
             cv2.imshow("Trajectory "+str(self.sid), self.trajectory)
